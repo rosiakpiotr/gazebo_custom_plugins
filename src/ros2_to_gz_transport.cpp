@@ -1,7 +1,7 @@
 #include "gazebo_custom_plugins/ros2_to_gz_transport.hpp"
 #include "gazebo/common/Console.hh"
 #include "gazebo_custom_plugins/CommandPitchAngle.pb.h"
-#include <iostream>
+// #include <iostream>
 #include <std_msgs/msg/detail/float32__struct.hpp>
 #include <string>
 
@@ -36,14 +36,14 @@ void ROS2ToGzTransportBridge::Load(physics::ModelPtr _model,
 	10, [pub](std_msgs::msg::Float32MultiArray::SharedPtr message) {
 		mav_msgs::msgs::CommandPitchAngle transport_msg;
 
-		std::cout << "Callback: ";
+		// std::cout << "Callback: ";
 
 		for (const float &pitch : message->data) {
 			transport_msg.add_pitch_angle(pitch);
-			std::cout << pitch << "\t";
+			// std::cout << pitch << "\t";
 		}
 
-		std::cout << std::endl;;
+		// std::cout << std::endl;;
 		pub->Publish(transport_msg);
 	});
 	_rclcpp_subs.push_back(sub);
