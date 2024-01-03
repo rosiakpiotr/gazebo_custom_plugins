@@ -1,0 +1,7 @@
+syntax = "proto2";
+package mav_msgs.msgs;
+
+message CommandPitchAngle
+{
+  repeated float   pitch_angle  = 1 [packed=true];
+}

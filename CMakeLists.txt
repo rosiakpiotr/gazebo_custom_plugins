@@ -24,21 +24,62 @@ find_package(gazebo_msgs REQUIRED)
 find_package(gazebo_ros REQUIRED)
 find_package(rclcpp REQUIRED)
 
+# XXX this approach is extremely error prone
+# it would be preferable to either depend on the
+# compiled headers from Gazebo directly
+# or to have something entirely independent.
+#
+set(PROTOBUF_IMPORT_DIRS "")
+
+foreach(ITR ${GAZEBO_INCLUDE_DIRS})
+  if(ITR MATCHES ".*gazebo-[0-9.]+$")
+    set(PROTOBUF_IMPORT_DIRS "${ITR}/gazebo/msgs/proto")
+  endif()
+endforeach()
+
+# PROTOBUF_IMPORT_DIRS has to be set before
+# find_package is called
+find_package(Protobuf REQUIRED)
+pkg_check_modules(PROTOBUF protobuf)
+
+if("${PROTOBUF_VERSION}" VERSION_LESS "2.5.0")
+  message(FATAL_ERROR "protobuf version: ${PROTOBUF_VERSION} not compatible, must be >= 2.5.0")
+endif()
+
+if("${GAZEBO_VERSION}" VERSION_LESS "6.0")
+  message(FATAL_ERROR "You need at least Gazebo 6.0. Your version: ${GAZEBO_VERSION}")
+else()
+  message(STATUS "Gazebo version: ${GAZEBO_VERSION}")
+endif()
+
+# --------------------#
+# Message Generation #
+# --------------------#
+set(mav_msgs
+  msgs/CommandPitchAngle.proto
+)
+
+PROTOBUF_GENERATE_CPP(MAV_PROTO_SRCS MAV_PROTO_HDRS ${mav_msgs})
+
+add_library(mav_msgs SHARED ${MAV_PROTO_SRCS})
+target_link_libraries(mav_msgs ${PROTOBUF_LIBRARY})
+
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 link_directories(${gazebo_dev_LIBRARY_DIRS})
 
-add_library(gazebo_motor_model_vpp SHARED
-  src/gazebo_motor_model_vpp.cpp
+add_library(gazebo_ros2_to_gz_traznsport SHARED
+  src/ros2_to_gz_transport.cpp
 )
-target_include_directories(gazebo_motor_model_vpp PUBLIC include)
-ament_target_dependencies(gazebo_motor_model_vpp
+target_include_directories(gazebo_ros2_to_gz_traznsport PUBLIC include)
+ament_target_dependencies(gazebo_ros2_to_gz_traznsport
   gazebo_dev
   gazebo_msgs
   gazebo_ros
   rclcpp
 )
-ament_export_libraries(gazebo_motor_model_vpp)
+target_link_libraries(gazebo_ros2_to_gz_traznsport mav_msgs)
+ament_export_libraries(gazebo_ros2_to_gz_traznsport)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -57,8 +98,22 @@ ament_package()
 install(DIRECTORY include/
   DESTINATION include)
 
+get_target_property(generated_headers mav_msgs SOURCES)
+install(FILES ${generated_headers} DESTINATION include/${PROJECT_NAME})
+
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
+)
+
 install(TARGETS
-  gazebo_motor_model_vpp
+  gazebo_ros2_to_gz_traznsport
+  mav_msgs
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
+
+install(DIRECTORY
+  worlds
+  DESTINATION share/${PROJECT_NAME}/
+)
