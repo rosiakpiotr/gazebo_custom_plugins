@@ -23,6 +23,7 @@ find_package(gazebo_dev REQUIRED)
 find_package(gazebo_msgs REQUIRED)
 find_package(gazebo_ros REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(px4_msgs REQUIRED)
 
 # XXX this approach is extremely error prone
 # it would be preferable to either depend on the
@@ -57,9 +58,12 @@ endif()
 # --------------------#
 set(mav_msgs
   msgs/CommandPitchAngle.proto
+  msgs/VppState.proto
 )
 
 PROTOBUF_GENERATE_CPP(MAV_PROTO_SRCS MAV_PROTO_HDRS ${mav_msgs})
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(mav_msgs SHARED ${MAV_PROTO_SRCS})
 target_link_libraries(mav_msgs ${PROTOBUF_LIBRARY})
@@ -67,6 +71,13 @@ target_link_libraries(mav_msgs ${PROTOBUF_LIBRARY})
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 link_directories(${gazebo_dev_LIBRARY_DIRS})
+
+# install the generated protobuf headers
+install(FILES
+  ${MAV_PROTO_HDRS}
+  DESTINATION
+  include/${PROJECT_NAME}
+)
 
 add_library(gazebo_ros2_to_gz_traznsport SHARED
   src/ros2_to_gz_transport.cpp
@@ -77,7 +88,9 @@ ament_target_dependencies(gazebo_ros2_to_gz_traznsport
   gazebo_msgs
   gazebo_ros
   rclcpp
+  px4_msgs
 )
+add_dependencies(gazebo_ros2_to_gz_traznsport mav_msgs)
 target_link_libraries(gazebo_ros2_to_gz_traznsport mav_msgs)
 ament_export_libraries(gazebo_ros2_to_gz_traznsport)
 
@@ -98,9 +111,6 @@ ament_package()
 install(DIRECTORY include/
   DESTINATION include)
 
-get_target_property(generated_headers mav_msgs SOURCES)
-install(FILES ${generated_headers} DESTINATION include/${PROJECT_NAME})
-
 install(DIRECTORY
   launch
   DESTINATION share/${PROJECT_NAME}/
@@ -108,7 +118,6 @@ install(DIRECTORY
 
 install(TARGETS
   gazebo_ros2_to_gz_traznsport
-  mav_msgs
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)

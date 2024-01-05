@@ -11,10 +11,10 @@
 #include <rclcpp/publisher_base.hpp>
 #include <rclcpp/subscription_base.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
-#include <vector>
-
+#include <px4_msgs/msg/vpp_state.hpp>
 
 #include <gazebo/common/Plugin.hh>
+#include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/transport/transport.hh>
 #include <gazebo/util/system.hh>
@@ -24,10 +24,38 @@
 #include <gazebo_ros/node.hpp>
 #include <gazebo_ros/utils.hpp>
 
-#include <gazebo_custom_plugins/CommandPitchAngle.pb.h>
+
+#include "gazebo_custom_plugins/VppState.pb.h"
+
 
 namespace gazebo
 {
+
+/**
+ * \brief Obtains a parameter from sdf.
+ * \param[in] sdf Pointer to the sdf object.
+ * \param[in] name Name of the parameter.
+ * \param[out] param Param Variable to write the parameter to.
+ * \param[in] default_value Default value, if the parameter not available.
+ * \param[in] verbose If true, gzerror if the parameter is not available.
+ */
+template<class T>
+bool getSdfParam(sdf::ElementPtr sdf, const std::string &name, T &param, const T &default_value, const bool &verbose =
+			 false)
+{
+	if (sdf->HasElement(name)) {
+		param = sdf->GetElement(name)->Get<T>();
+		return true;
+
+	} else {
+		param = default_value;
+	}
+
+	return false;
+}
+
+typedef const boost::shared_ptr<const mav_msgs::msgs::VppState> VppStatePtr;
+
 class GAZEBO_VISIBLE ROS2ToGzTransportBridge : public ModelPlugin
 {
 public:
@@ -46,7 +74,9 @@ private:
 	std::vector<rclcpp::PublisherBase::SharedPtr> _rclcpp_pubs;
 	std::vector<rclcpp::SubscriptionBase::SharedPtr> _rclcpp_subs;
 
-	// std::vector<transport::SubscriberPtr> _transport_subs;
+	rclcpp::Publisher<px4_msgs::msg::VppState>::SharedPtr _vpp_state_ros2_pub {};
+
+	std::vector<transport::SubscriberPtr> _transport_subs;
 	std::vector<transport::PublisherPtr> _transport_pubs;
 
 	common::Time lastUpdateTime;

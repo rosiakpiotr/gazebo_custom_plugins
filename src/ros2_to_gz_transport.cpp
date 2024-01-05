@@ -1,9 +1,5 @@
 #include "gazebo_custom_plugins/ros2_to_gz_transport.hpp"
-#include "gazebo/common/Console.hh"
 #include "gazebo_custom_plugins/CommandPitchAngle.pb.h"
-// #include <iostream>
-#include <std_msgs/msg/detail/float32__struct.hpp>
-#include <string>
 
 using namespace gazebo;
 
@@ -22,16 +18,21 @@ void ROS2ToGzTransportBridge::Load(physics::ModelPtr _model,
 	this->model = _model;
 	this->sdf = _sdf;
 
+	std::string pitch_angle_pub_topic_ = "";
+	std::string vpp_state_sub_topic_ = "";
+
+	getSdfParam<std::string>(_sdf, "pitchAnglePubTopic", pitch_angle_pub_topic_, pitch_angle_pub_topic_);
+	getSdfParam<std::string>(_sdf, "vppStateSubTopic", vpp_state_sub_topic_, vpp_state_sub_topic_);
+
 	ros_node = gazebo_ros::Node::Get(sdf);
 	transport_node = transport::NodePtr(new transport::Node());
 	transport_node->Init();
 
-
-	auto dummy_pub = ros_node->create_publisher<std_msgs::msg::Float32MultiArray>("/plugin_is_alive", 10);
-	_rclcpp_pubs.push_back(dummy_pub);
+	// auto dummy_pub = ros_node->create_publisher<std_msgs::msg::Float32MultiArray>("/plugin_is_alive", 10);
+	// _rclcpp_pubs.push_back(dummy_pub);
 
 	auto pub =
-		this->transport_node->Advertise<mav_msgs::msgs::CommandPitchAngle>("/gazebo/default/iris/gazebo/command/pitch_angle");
+		this->transport_node->Advertise<mav_msgs::msgs::CommandPitchAngle>(pitch_angle_pub_topic_);
 	auto sub = ros_node->create_subscription<std_msgs::msg::Float32MultiArray>("/vpp/pitch_angle",
 	10, [pub](std_msgs::msg::Float32MultiArray::SharedPtr message) {
 		mav_msgs::msgs::CommandPitchAngle transport_msg;
@@ -48,5 +49,26 @@ void ROS2ToGzTransportBridge::Load(physics::ModelPtr _model,
 	});
 	_rclcpp_subs.push_back(sub);
 	_transport_pubs.push_back(pub);
+
+	_vpp_state_ros2_pub = ros_node->create_publisher<px4_msgs::msg::VppState>("/vpp/vpp_state", 9);
+	auto vpp_state_sub = transport_node->Subscribe<mav_msgs::msgs::VppState>(vpp_state_sub_topic_, [this](
+	VppStatePtr & msg) {
+		px4_msgs::msg::VppState vpp_state_ros2_msg;
+
+		vpp_state_ros2_msg.thrust = msg->thrust();
+		vpp_state_ros2_msg.torque = msg->torque();
+		vpp_state_ros2_msg.aoa = msg->aoa();
+		vpp_state_ros2_msg.pitch = msg->pitch();
+		vpp_state_ros2_msg.rpm = msg->rpm();
+		vpp_state_ros2_msg.airspeed = msg->airspeed();
+		vpp_state_ros2_msg.advance_ratio = msg->advance_ratio();
+		vpp_state_ros2_msg.motor_index = msg->motor_index();
+
+		_vpp_state_ros2_pub->publish(vpp_state_ros2_msg);
+
+		// std::cout << "VppState: " << msg->DebugString() << std::endl;
+	});
+
+	_transport_subs.push_back(vpp_state_sub);
 
 }

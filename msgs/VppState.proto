@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package mav_msgs.msgs;
+
+message VppState {
+  required double thrust = 1;
+  required double torque = 2;
+  required double aoa = 3;
+  required double pitch = 4;
+  required double rpm = 5;
+  required double airspeed = 6;
+  required double advance_ratio = 7;
+  required double motor_index = 8;
+} 
