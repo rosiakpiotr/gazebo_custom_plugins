@@ -14,7 +14,6 @@
 
   <depend>gazebo_dev</depend>
   <depend>rclcpp</depend>
-  <depend>gimbal_interfaces</depend>
   <depend>px4_msgs</depend>
 
   <exec_depend>ros2launch</exec_depend>

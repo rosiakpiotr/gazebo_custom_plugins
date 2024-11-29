@@ -28,9 +28,6 @@ void ROS2ToGzTransportBridge::Load(physics::ModelPtr _model,
 	transport_node = transport::NodePtr(new transport::Node());
 	transport_node->Init();
 
-	// auto dummy_pub = ros_node->create_publisher<std_msgs::msg::Float32MultiArray>("/plugin_is_alive", 10);
-	// _rclcpp_pubs.push_back(dummy_pub);
-
 	auto pub =
 		this->transport_node->Advertise<mav_msgs::msgs::CommandPitchAngle>(pitch_angle_pub_topic_);
 	auto sub = ros_node->create_subscription<std_msgs::msg::Float32MultiArray>("/vpp/pitch_angle",
