@@ -1,11 +1,3 @@
-# Important
-
-After compilation in workspace make sure to copy plugin .so to directory with other built PX4 gazebo plugins.
-
-Example command ran from root of workspace
-
-```cp install/gazebo_custom_plugins/lib/libgazebo_ros2_to_gz_traznsport.so ~/PX4-Autopilot/build/px4_sitl_default/build_gazebo-classic/```
-
 ## Publishing
 
 Example command to publish pitch angles by hand

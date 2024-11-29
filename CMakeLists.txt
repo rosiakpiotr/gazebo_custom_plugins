@@ -122,6 +122,11 @@ install(TARGETS
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
+# Inject compiled .so plugin into PX4-Autopilot simulation structure
+install(TARGETS
+  gazebo_ros2_to_gz_traznsport
+  DESTINATION ~/PX4-Autopilot/build/px4_sitl_default/build_gazebo-classic)
+
 install(DIRECTORY
   worlds
   DESTINATION share/${PROJECT_NAME}/
