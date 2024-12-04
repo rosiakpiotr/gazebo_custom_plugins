@@ -29,11 +29,14 @@ find_package(gazebo_custom_msg REQUIRED)
 add_library(gazebo_ros2_to_gz_traznsport SHARED
   src/ros2_to_gz_transport.cpp
 )
-
-message(STATUS "Include dirs GAZEBO_CUSTOM_MSG: ${gazebo_custom_msg_INCLUDE_DIRS}")
+add_library(gazebo_vpp_motor SHARED
+  src/vpp_motor/gazebo_vpp_motor.cpp
+)
 
 target_include_directories(gazebo_ros2_to_gz_traznsport PUBLIC ${gazebo_custom_msg_INCLUDE_DIRS})
 target_include_directories(gazebo_ros2_to_gz_traznsport PUBLIC include)
+target_include_directories(gazebo_vpp_motor PUBLIC ${gazebo_custom_msg_INCLUDE_DIRS})
+target_include_directories(gazebo_vpp_motor PUBLIC include)
 
 ament_target_dependencies(gazebo_ros2_to_gz_traznsport
   gazebo_dev
@@ -43,15 +46,19 @@ ament_target_dependencies(gazebo_ros2_to_gz_traznsport
   px4_msgs
   gazebo_custom_msg
 )
+ament_target_dependencies(gazebo_vpp_motor
+  gazebo_dev
+  gazebo_msgs
+  gazebo_ros
+  rclcpp
+  px4_msgs
+  gazebo_custom_msg
+)
 
-# add_dependencies(gazebo_ros2_to_gz_traznsport gazebo_custom_msg)
-# target_link_libraries(gazebo_ros2_to_gz_traznsport PUBLIC gazebo_custom_msg::sknr_msgs)
 ament_export_libraries(gazebo_ros2_to_gz_traznsport)
+ament_export_libraries(gazebo_vpp_motor)
 
 ament_package()
-
-install(DIRECTORY include/
-  DESTINATION include)
 
 install(DIRECTORY
   launch
@@ -64,9 +71,18 @@ install(TARGETS
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
+install(TARGETS
+  gazebo_vpp_motor
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
+
 # Inject compiled .so plugin into PX4-Autopilot simulation structure
 install(TARGETS
   gazebo_ros2_to_gz_traznsport
+  DESTINATION ~/PX4-Autopilot/build/px4_sitl_default/build_gazebo-classic)
+install(TARGETS
+  gazebo_vpp_motor
   DESTINATION ~/PX4-Autopilot/build/px4_sitl_default/build_gazebo-classic)
 
 install(DIRECTORY
