@@ -1,5 +1,5 @@
 #include "gazebo_custom_plugins/ros2_to_gz_transport.hpp"
-#include "gazebo_custom_plugins/CommandPitchAngle.pb.h"
+#include <gazebo_custom_msg/CommandPitchAngle.pb.h>
 
 using namespace gazebo;
 
@@ -29,10 +29,10 @@ void ROS2ToGzTransportBridge::Load(physics::ModelPtr _model,
 	transport_node->Init();
 
 	auto pub =
-		this->transport_node->Advertise<mav_msgs::msgs::CommandPitchAngle>(pitch_angle_pub_topic_);
+		this->transport_node->Advertise<sknr::msgs::CommandPitchAngle>(pitch_angle_pub_topic_);
 	auto sub = ros_node->create_subscription<std_msgs::msg::Float32MultiArray>("/vpp/pitch_angle",
 	10, [pub](std_msgs::msg::Float32MultiArray::SharedPtr message) {
-		mav_msgs::msgs::CommandPitchAngle transport_msg;
+		sknr::msgs::CommandPitchAngle transport_msg;
 
 		// std::cout << "Callback: ";
 
@@ -48,7 +48,7 @@ void ROS2ToGzTransportBridge::Load(physics::ModelPtr _model,
 	_transport_pubs.push_back(pub);
 
 	_vpp_state_ros2_pub = ros_node->create_publisher<px4_msgs::msg::VppState>("/vpp/vpp_state", 9);
-	auto vpp_state_sub = transport_node->Subscribe<mav_msgs::msgs::VppState>(vpp_state_sub_topic_, [this](
+	auto vpp_state_sub = transport_node->Subscribe<sknr::msgs::VppState>(vpp_state_sub_topic_, [this](
 	VppStatePtr & msg) {
 		px4_msgs::msg::VppState vpp_state_ros2_msg;
 

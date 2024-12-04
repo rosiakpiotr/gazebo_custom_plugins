@@ -23,9 +23,7 @@
 #include <gazebo_ros/conversions/builtin_interfaces.hpp>
 #include <gazebo_ros/node.hpp>
 #include <gazebo_ros/utils.hpp>
-
-
-#include "gazebo_custom_plugins/VppState.pb.h"
+#include <gazebo_custom_msg/VppState.pb.h>
 
 
 namespace gazebo
@@ -54,7 +52,7 @@ bool getSdfParam(sdf::ElementPtr sdf, const std::string &name, T &param, const T
 	return false;
 }
 
-typedef const boost::shared_ptr<const mav_msgs::msgs::VppState> VppStatePtr;
+typedef const boost::shared_ptr<const sknr::msgs::VppState> VppStatePtr;
 
 class GAZEBO_VISIBLE ROS2ToGzTransportBridge : public ModelPlugin
 {

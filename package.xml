@@ -15,6 +15,7 @@
   <depend>gazebo_dev</depend>
   <depend>rclcpp</depend>
   <depend>px4_msgs</depend>
+  <depend>gazebo_custom_msg</depend>
 
   <exec_depend>ros2launch</exec_depend>
 
