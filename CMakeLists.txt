@@ -87,5 +87,10 @@ install(TARGETS
 
 install(DIRECTORY
   worlds
-  DESTINATION share/${PROJECT_NAME}/
+  DESTINATION /home/sknr/PX4-Autopilot/Tools/simulation/gazebo-classic/sitl_gazebo-classic/
+)
+
+install(DIRECTORY
+  models
+  DESTINATION /home/sknr/PX4-Autopilot/Tools/simulation/gazebo-classic/sitl_gazebo-classic/
 )
